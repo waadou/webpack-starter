@@ -1,4 +1,5 @@
 const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
 	/**
@@ -31,8 +32,16 @@ module.exports = {
 		 * In case of multipe entry points, the '[name]' in the value("[name].js")
 		 * for the key 'filename' will be replaced with the the key of the entry point object
 		 * (in our case, waad.app.bundle).
+		 *
+		 * Each time we build our project, many things happen:
+		 *  - The [contenthash] is replaced with a new generated hash.
+		 *  - A new JS file with the name [name][contenthash].js is generated
+		 *  - Even if we delete the dist folder, it will be recreated.
+		 *  - With the help of th html-webpack-plugin, the index.html file is generated based on
+		 * the contents of the template.html file in the src folder.
 		 */
-		filename: "[name].js",
+		filename: "[name][contenthash].js",
+		clean: true, // Remove previously generated files from the dist folder
 	},
 
 	/**
@@ -57,8 +66,47 @@ module.exports = {
 		],
 	},
 
+	plugins: [
+		/**
+		 *
+		 */
+		new HtmlWebpackPlugin({
+			title: "Webpack App", // The title to use for the generated HTML(in the head tag)
+			filename: "index.html", // The name of the file that will be generated in the dist folder
+			template: "./src/template.html",
+		}),
+	],
+
+	/** Source map */
+	devTool: "source-map",
+
 	/**
 	 * Dev server
 	 */
-	devServer: {},
+	devServer: {
+		port: 3000,
+
+		/* Enable gzip compression for everything served */
+		compress: true,
+		open: true, // Tells dev-server to open the browser after server had been started.
+		hot: true,
+		historyApiFallback: true,
+
+		/** Content that will be served */
+		static: {
+			directory: path.join(__dirname, "dist"),
+		},
+		client: {
+			/**
+			 * Allows to set log level in the browser, e.g. before reloading, before an error or when
+			 * Hot Module Replacement is enabled.
+			 */
+			logging: "info",
+
+			/**
+			 * Shows a full-screen overlay in the browser when there are compiler errors or warnings.
+			 */
+			overlay: true, // is equivalent to the object: { errors : true, warnings: true }
+		},
+	},
 };
