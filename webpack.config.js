@@ -42,6 +42,7 @@ module.exports = {
 		 */
 		filename: "[name][contenthash].js",
 		clean: true, // Remove previously generated files from the dist folder
+		assetModuleFilename: "[name][ext]",
 	},
 
 	/**
@@ -58,11 +59,28 @@ module.exports = {
 				use: ["style-loader", "css-loader", "sass-loader"], // The order matters, from bottom to top
 			},
 
-			/** Infos for the Sass loader 
+			/** Infos for the Sass loader */
 			{
 				test: /\.js$/,
+				exclude: /node_modules/,
+				use: {
+					loader: "babel-loader",
+					options: { presets: ["@babel/preset-env"] },
+				},
 			},
-            */
+
+			/** Infos for the Sass loader */
+			{
+				test: /\.(png|jpg|jpeg|png|svg|gif|ico)$/i,
+				type: "asset/resource",
+			},
+
+			/* Source map loader */
+			{
+				test: /\.js$/,
+				enforce: "pre",
+				use: ["source-map-loader"],
+			},
 		],
 	},
 
@@ -76,9 +94,6 @@ module.exports = {
 			template: "./src/template.html",
 		}),
 	],
-
-	/** Source map */
-	devTool: "source-map",
 
 	/**
 	 * Dev server
